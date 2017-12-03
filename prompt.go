@@ -92,6 +92,7 @@ func (p *Prompt) Prompt(prompt string) (string, error) {
 				break
 			}
 			if ev.Key == term.KeyBackspace {
+				state.MaybeUseHistory()
 				if len(state.line) > 0 {
 					state.Edit(func(line string) string {
 						return line[:len(line)-1]
