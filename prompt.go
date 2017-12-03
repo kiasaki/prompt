@@ -198,11 +198,6 @@ func (s *promptState) CompleteSuggest() {
 			t.SetCursorColumn(0)
 		}
 		s.Render()
-
-		// Reset completion options so that we don't show the list of all
-		// options twice and so that it's possible to hit tab repetadly and
-		// keep selecting the first option from `completionOptions`
-		s.completionOptions = nil
 		return
 	}
 
@@ -228,6 +223,12 @@ func (s *promptState) CompleteSuggest() {
 				break
 			}
 		}
+	}
+
+	// Don't keep the suggestions around if we just changed the promt line
+	// to enable chaining `Tab` with different suggestions
+	if s.line != bestOption {
+		s.completionOptions = nil
 	}
 
 	// Suggest it
