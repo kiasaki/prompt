@@ -63,6 +63,13 @@ func (p *Prompt) Prompt(prompt string) (string, error) {
 	p.terminal.Puts(prompt)
 
 	line := ""
+	historyIndex := -1
+	maybeUseHistory := func() {
+		if historyIndex != -1 {
+			line = p.history[historyIndex]
+			historyIndex = -1
+		}
+	}
 	for {
 		ev := <-p.terminal.Events()
 		if ev.Type == term.EventKey {
@@ -73,19 +80,36 @@ func (p *Prompt) Prompt(prompt string) (string, error) {
 				return "", ErrorPromptEnded
 			}
 			if ev.Key == term.KeyCr {
+				maybeUseHistory()
 				p.terminal.Puts("\n")
 				p.terminal.SetCursorColumn(0)
 				break
 			}
 			if ev.Key == term.KeyBackspace {
 				if len(line) > 0 {
+					maybeUseHistory()
 					line = line[:len(line)-1]
+				}
+			} else if ev.Key == term.KeyUp {
+				if historyIndex == -1 {
+					if len(p.history) > 0 {
+						historyIndex = len(p.history) - 1
+					}
+				} else if historyIndex > 0 {
+					historyIndex--
+				}
+			} else if ev.Key == term.KeyDown {
+				if historyIndex == len(p.history)-1 || historyIndex == -1 {
+					historyIndex = -1
+				} else {
+					historyIndex++
 				}
 			} else if ev.Key == term.KeyCtrlU {
 				line = ""
 			} else if ev.Key == term.KeyCtrlL {
 				p.terminal.Clear()
 			} else if ev.Key == term.KeyRune {
+				maybeUseHistory()
 				line += string(ev.Rune)
 			} else {
 				// TODO remove debug
@@ -97,7 +121,11 @@ func (p *Prompt) Prompt(prompt string) (string, error) {
 		p.terminal.SetCursorColumn(0)
 		p.terminal.Puts(strings.Repeat(" ", p.terminal.Width))
 		p.terminal.SetCursorColumn(0)
-		p.terminal.Puts(prompt + line)
+		if historyIndex == -1 {
+			p.terminal.Puts(prompt + line)
+		} else {
+			p.terminal.Puts(prompt + p.history[historyIndex])
+		}
 	}
 
 	return string(line), nil
