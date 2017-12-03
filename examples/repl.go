@@ -25,7 +25,16 @@ func print(cells []string) {
 	}
 }
 
+func completionFn(line string) []string {
+	return []string{
+		strings.TrimRight(strings.Repeat(line+"_", 2), "_"),
+		strings.TrimRight(strings.Repeat(line+"_", 3), "_"),
+		strings.TrimRight(strings.Repeat(line+"_", 4), "_"),
+	}
+}
+
 func main() {
+	P.SetCompletionFn(completionFn)
 	fmt.Println("'CSV' parser. Press Ctrl-D to exit.")
 	for {
 		if line, ok := read(); ok {
