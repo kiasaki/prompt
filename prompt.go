@@ -230,6 +230,12 @@ func (s *promptState) CompleteSuggest() {
 		}
 	}
 
+	// If we autocompleted but there was more than 1 option,
+	// show completion options right away
+	if len(s.completionOptions) > 1 {
+		s.RenderCompletionOptions()
+	}
+
 	// Don't keep the suggestions around if we just changed the promt line
 	// to enable chaining `Tab` with different suggestions
 	if s.line != bestOption {
