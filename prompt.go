@@ -146,6 +146,16 @@ func (s *promptState) Render() {
 	}
 }
 
+func (s *promptState) RenderCompletionOptions() {
+	t := s.p.terminal
+	t.Puts("\n")
+	t.SetCursorColumn(0)
+	for _, option := range s.completionOptions {
+		t.Puts(option + "\n")
+		t.SetCursorColumn(0)
+	}
+}
+
 func (s *promptState) MaybeUseHistory() {
 	if s.historyIndex != -1 {
 		s.line = s.p.history[s.historyIndex]
@@ -191,13 +201,7 @@ func (s *promptState) CompleteSuggest() {
 
 	// We just completed, list all completion options
 	if s.completionOptions != nil {
-		t := s.p.terminal
-		t.Puts("\n")
-		t.SetCursorColumn(0)
-		for _, option := range s.completionOptions {
-			t.Puts(option + "\n")
-			t.SetCursorColumn(0)
-		}
+		s.RenderCompletionOptions()
 		s.Render()
 		return
 	}
